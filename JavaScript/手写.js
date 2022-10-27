@@ -1,0 +1,300 @@
+function myInstanceOf(obj,origin){
+    if(typeof obj != 'object' ||  obj == null ) return false
+    while(obj){
+        if(obj._proto_ == origin.prototype){
+            return true
+        }
+        obj = obj._proto_
+    }
+    return false
+    
+}
+
+function myNew (Fun){
+    let obj = {}
+    obj._proto_ = Fun.prototype
+    let res = Fun.apply(obj,Array.prototype.slice.call(arguments,1))
+    return typeof res == 'object' ? res : obj
+}
+
+function myCall(context,...args){
+    context = context || window // context = (typeof context === 'object' ? context : window)
+     // 防止覆盖掉原有属性
+    let key = Symbol()
+    // 这里的this为需要执行的方法
+    context[key] = this
+    let res = context[key](...args)
+    delete context[key]
+    return res
+}
+function myBind(context,args){
+    context = context || window // context = (typeof context === 'object' ? context : window)
+    
+    return (...args) => {
+        this.call(context, ...args)
+    }
+}
+
+// 原型链继承
+function Parent() {
+    this.name = 'tom'
+}
+Parent.prototype.sayName = function() {
+    console.log(this.name);
+}
+function Child() {
+
+}
+Child.prototype = new Parent()
+
+
+// 构造函数继承
+function Parent(name) {
+    this.name = name
+    this.sayName = function() {
+        console.log(this.name);
+    }
+}
+function Child(name) {
+    Parent.call(this,name)
+}
+
+// 组合继承
+function Parent(age) {
+    this.age = age
+    this.name = 'tom'
+}
+Parent.prototype.sayName = function() {
+    console.log(this.name);
+}
+
+function Child(name,age) {
+    Parent.call(this,name,age)
+}
+Child.prototype = new Parent()
+Child.prototype.constructor = Child
+
+function deepClone(source){
+    let tar = source.constructor == Array? [] : {}
+    for(let key in source){
+        if(source[key] &&  source.hasOwnProperty(key)){
+            if(typeof source == 'object'){
+                tar[key] = source[key].constructor == Array? [] : {}
+                tar[key] = deepClone(source[key])
+            }else{
+                tar[key] = source[key]
+
+            }
+        }
+    }
+    return tar
+
+}
+function curry(fn){
+    if(fn.length < 1) return fn
+    const generate = (...args)=>{
+        if(fn.length == args.length){
+            return fn(...args)
+        }else{
+            return (...arg)=>{
+                return generate(...args,...arg)
+            }
+        }
+    }
+    return generate
+}
+
+class EventBus{
+    constructor(){
+        this.catch = {}
+    }
+    on(name,fun){
+        let tasks = this.catch[name]
+        if(tasks){
+            this.catch[name].push(fun)
+        }else{
+            this.catch[name] = [fun]
+        }
+    }
+    off(name,fun){
+        let tasks = this.catch[name]
+        if(tasks){
+            let index = tasks.findIndex(item => item.fun == fun)
+            this.catch[name].splice(index,1)
+        }
+    }
+    emit(name,once = false,...args){
+        if(this.catch[name]){
+            let tasks = this.catch[name].slice()
+            for(let fn of tasks){
+                fn(...args)
+            }
+        }
+        if(once){
+            delete this.catch[name]
+        }
+    }
+}
+const myPromiseAll = function(promiseList) {
+    return new Promise((resolve,reject)=>{
+        let count = 0
+        let ans = []
+        for(let i=0;i<promiseList.length;++i){
+            promiseList[i].then(res=>{
+                ans[i] = res
+                count ++
+                if(count == promiseList.length){
+                    resolve(ans)
+                }
+            }).catch(err=>{
+                reject(err)
+            })
+        }
+    })
+}
+const myPromiseRace = function(promiseList){
+    return new Promise((resolve,reject)=>{
+        promiseList.forEach(item=>{
+            item.then(val=>resolve(val),err=>reject(err))
+        })
+    })
+}
+const myJsonp = function (url,params,callback){
+    let generate = ()=>{
+        let str = ''
+        for(let key in params){
+            if(Object.prototype.hasOwnProperty.call(params,key)){
+                str += `${key}=${params[key]}&`
+            }
+        }
+        str += `callback=${callback}`
+        return `${url}?${str}`
+    }
+    return new Promise((resolve,reject)=>{
+        let script = document.createElement('script')
+        script.src = generate()
+        document.body.appendChild(script)
+        window[callback] = data =>{
+            resolve(data)
+            document.removeChild(script)
+        }
+    })
+}
+const myAjax = function(url){
+    return new Promise((resolve,reject)=>{
+        let xhr = XMLHttpRequest?new XMLHttpRequest():new ActiveXObject('MscroSoft.XMLHttp')
+        xhr.open('GET',url,false)
+        xhr.setRequestHeader('Accept','application/json')
+        xhr.onreadystatechange = function(){
+            if(xhr.readyState !== 4) return
+            if(xhr.status == 200 || xhr.status == 304){
+                resolve(xhr.responseText)
+            }else{
+                reject(new Error(xhr.responseText))
+            }
+        }
+        xhr.send()
+
+    })
+}
+const lazyload = function () {
+    const imgs = document.getElementsByTagName('img');
+    const len = imgs.length;
+    // 视口的高度
+    const viewHeight = document.documentElement.clientHeight;
+    // 滚动条高度
+    const scrollHeight = document.documentElement.scrollTop || document.body.scrollTop;
+    for (let i = 0; i < len; i++) {
+      const offsetHeight = imgs[i].offsetTop;
+      if (offsetHeight < viewHeight + scrollHeight) {
+        const src = imgs[i].dataset.src;
+        imgs[i].src = src;
+      }
+    }
+  }
+  //滚动加载
+window.addEventListener('scroll', function() {
+    const clientHeight = document.documentElement.clientHeight;
+    const scrollTop = document.documentElement.scrollTop;
+    const scrollHeight = document.documentElement.scrollHeight;
+    if (clientHeight + scrollTop >= scrollHeight) {
+        // 检测到滚动至页面底部，进行后续操作
+        // ...
+    }
+}, false);
+  
+
+
+//深拷贝
+function clone(tar,map=new Map){
+if(typeof tar == 'object'){
+    let target = Array.isArray(tar)?[]:{}
+    if(map.get(tar)){
+    return map.get(tar)
+    }
+    map.set(tar,target)
+    for(let key in tar){
+    target[key] = clone(tar[key],map)
+    }
+    return target
+}else{
+    return tar
+}
+}
+
+function debounce(event,time,flag){
+let time = null
+return function (...args){
+    clearTimeout(time)
+    if(flag && !time){
+    event.apply(this,args)
+    }
+    time = setTimeout(()=>{
+    event.apply(this,args)
+    },time)
+}
+}
+
+function throttle(event,time){
+let timer = null
+return function (...args){
+    if(!timer){
+    timer = setTimeout(() => {
+        timer = null
+        event.apply(this,args)
+    }, time);
+    }
+}
+}
+
+Promise.prototype.all = function(promises){//promises为 Array
+let result = []
+let promiseCount = 0
+let promiseLength = promises.length
+
+function isPromise(obj) {
+    return !!obj && (typeof obj === 'object' || typeof obj === 'function') && typeof obj.then === 'function';  
+}
+
+return new Promise(function(resolve,reject){
+    for(let i=0;i<promiseLength;++i){
+    let cur = promises[i]
+    if(isPromise(cur)){
+        // cur.then((res)=>{
+        Promise.resolve(cur).then((res)=>{
+        promiseCount++
+        result[i] = res
+        if(promiseCount = promiseLength){
+            resolve(result)
+        }
+        },err=>{
+        reject(err)
+        })
+    }else{
+        result[i] = promises[i];
+        resolve(result)
+    }
+    
+    }
+})
+}
