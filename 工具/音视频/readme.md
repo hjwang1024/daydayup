@@ -125,15 +125,6 @@ mediaRecorder.onstop = (e: Event) => {
 ```
 
 
-
-
-
-
-
-
-
-
-
 ## (WebRTC)[https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API]
 
 - WebRTC (Web Real-Time Communications) 是一项实时通讯技术，它允许网络应用或者站点，在不借助中间媒介的情况下，建立浏览器之间点对点（Peer-to-Peer）的连接
@@ -174,7 +165,6 @@ mediaRecorder.onstop = (e: Event) => {
 3. 获取网络信息(Candidate，IP 地址和端口)，并与远端进行交换。
 
 ![流程图](./WebRTC.jpeg)
-
 
 
 
