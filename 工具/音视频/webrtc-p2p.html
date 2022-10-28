@@ -171,7 +171,8 @@
                         // { urls: 'stun:stun4.l.google.com:19302' },
                         // { urls: 'stun:stun.ideasip.com' },
                         // { urls: 'stun:stun.schlund.de' },
-                        { urls: 'stun:stun.voipbuster.com ' },
+                        // { urls: 'stun:stun.stunprotocol.org' },
+                        { urls: 'stun:stun.voipbuster.com ' }, //公共服务器
                     ],
                 })
                 this.init()
@@ -207,6 +208,7 @@
                 },
                 // 创建 offer（提案）
                 async createOffer(){
+                    // 收集本地可用的公网地址，收到后通过信令服务器发送给对方
                     this.peerConnection.onicecandidate = async (event) => {
                         if (event.candidate) {
                           console.log('onicecandidate-offer');
