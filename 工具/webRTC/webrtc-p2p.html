@@ -149,6 +149,7 @@
           </div>
     </div>
     <script>
+      // http-server -p 3000 -S
         new Vue({
             el:'#app',
             data(){
@@ -206,7 +207,7 @@
                         })
                     }
                 },
-                // 创建 offer（提案）
+                // 创建 offer
                 async createOffer(){
                     // 收集本地可用的公网地址，收到后通过信令服务器发送给对方
                     this.peerConnection.onicecandidate = async (event) => {
@@ -234,7 +235,7 @@
                     console.log('createOffer');
                 },
 
-                // 添加 answer(应答)
+                // 添加 answer
                 async addAnswer() {
                     const answer = JSON.parse(this.answerSdp)
                     if (!this.peerConnection.currentRemoteDescription) {

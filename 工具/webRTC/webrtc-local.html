@@ -51,10 +51,7 @@
             audio:true
         }
 
-        // 设置仅交换视频
-        const offerOptions = {
-            offerToReceiveVideo: 1
-        }
+        
 
 
         function startHandle() {
@@ -74,10 +71,10 @@
             localVideo.srcObject = mediaStream; 
             localStream = mediaStream; 
             // console.log(localStream);
-            window.stream = mediaStream
+            window.stream = mediaStream //用于关闭摄像头
             callBtn.disabled = false;
         }
-
+        //   关闭摄像头
         function stopHandle() {
             window.stream.getTracks().forEach(track => track.stop());
             startBtn.disabled = false;
@@ -100,7 +97,7 @@
             if (audioTracks.length > 0) {
                 console.log(`使用的设备为: ${audioTracks[0].label}.`);
             }
-            const servers = null;
+            const servers = null; // 需要一个信令服务器 iceServers字段
 
             // 创建 RTCPeerConnection 对象
             localPeerConnection = new RTCPeerConnection(servers);
@@ -108,15 +105,15 @@
             // 监听返回的 Candidate
             localPeerConnection.addEventListener('icecandidate', handleConnection);
             // 监听 ICE 状态变化
-            localPeerConnection.addEventListener('iceconnectionstatechange', handleConnectionChange)
+            // localPeerConnection.addEventListener('iceconnectionstatechange', handleConnectionChange)
 
             remotePeerConnection = new RTCPeerConnection(servers);
             remotePeerConnection.addEventListener('icecandidate', handleConnection);
-            remotePeerConnection.addEventListener('iceconnectionstatechange', handleConnectionChange);
+            // remotePeerConnection.addEventListener('iceconnectionstatechange', handleConnectionChange);
+            
+            // 接收到远程流
             remotePeerConnection.addEventListener('track', gotRemoteMediaStream);
 
-            // 将音视频流添加到 RTCPeerConnection 对象中
-            // 注意：新的协议中已经不再推荐使用 addStream 方法来添加媒体流，应使用 addTrack 方法
             // localPeerConnection.addStream(localStream);
             // 遍历本地流的所有轨道
             localStream.getTracks().forEach((track) => {
@@ -125,25 +122,16 @@
             })
             console.log(localPeerConnection);
 
+            // 设置仅交换视频
+            const offerOptions = {
+                offerToReceiveVideo: 1
+            }
             // 2.交换媒体描述信息
             localPeerConnection.createOffer(offerOptions)
             .then(createdOffer).catch((err) => {
                 console.log('createdOffer 错误', err);
             });
         }
-
-        function hangupHandle() {
-            // 关闭连接并设置为空
-            localPeerConnection.close();
-            remotePeerConnection.close();
-            localPeerConnection = null;
-            remotePeerConnection = null;
-            hangupBtn.disabled = true;
-            callBtn.disabled = false;
-        }
-
-
-
         function createdOffer(description) {
             console.log(`本地创建offer返回的sdp:\n${description.sdp}`)
             // 本地设置描述并将它发送给远端
@@ -223,6 +211,16 @@
                 remoteStream = event.streams[0];
                 console.log('remote 开始接受远端流')
             }
+        }
+
+        function hangupHandle() {
+            // 关闭连接并设置为空
+            localPeerConnection.close();
+            remotePeerConnection.close();
+            localPeerConnection = null;
+            remotePeerConnection = null;
+            hangupBtn.disabled = true;
+            callBtn.disabled = false;
         }
 
         function handleConnectionChange(event) {

@@ -31,36 +31,37 @@ navigator.mediaDevices.getUserMedia({
 ```
 
 - stream(管理 tarck 的集合)
+
   1. stream 上有 2 个重要的属性
-      - active 代表该流是否为活动状态
-      - id 代表流的唯一值
+     - active 代表该流是否为活动状态
+     - id 代表流的唯一值
   2. 在 stream 上有操作 track 的一些增删查方法：
-      - addTrack: 将 track 添加到 stream 中
-      - getTracks getVideoTracks getAudioTracks：会返回 track list
-      - getTrackById: track 是有 id 属性，可以根据 id 在 stream 中获取该 track，如果不存在会返回 null
-      - removeTrack: 传入值是 MediaStreamTrack 对象，而非 trackId
+
+     - addTrack: 将 track 添加到 stream 中
+     - getTracks getVideoTracks getAudioTracks：会返回 track list
+     - getTrackById: track 是有 id 属性，可以根据 id 在 stream 中获取该 track，如果不存在会返回 null
+     - removeTrack: 传入值是 MediaStreamTrack 对象，而非 trackId
 
   3. 订阅 track 相关的事件：
-      - onaddtrack
-      - onremovetrack
+     - onaddtrack
+     - onremovetrack
 
 - track(视频/音频轨道)
-  ![track](./tracks.jpg)
+  ![track](./images/tracks.jpg)
   1. 属性(除了 enabled 外，全是只读)：
-      - id： 代表唯一值
-      - kind: "audio" | "video"
-      - enabled: 表示该轨道是否可用，可以被手动设置，设置为 false 后，视频黑屏，音频静音
-      - label: 和 mediaDevices.enumerateDevices 返回值设备的 label 相对应
-      - muted: 是否静音
-      - readyState: 枚举值， "live"表示输入设备正常连接，"ended"表示没有更多的数据
+     - id： 代表唯一值
+     - kind: "audio" | "video"
+     - enabled: 表示该轨道是否可用，可以被手动设置，设置为 false 后，视频黑屏，音频静音
+     - label: 和 mediaDevices.enumerateDevices 返回值设备的 label 相对应
+     - muted: 是否静音
+     - readyState: 枚举值， "live"表示输入设备正常连接，"ended"表示没有更多的数据
   2. 方法
-      - getConstraints(): 返回创建该轨道的配置,即当前 track 对应的`constraints`值
-      - applyConstraints(): 给该轨道应用新的配置
-      - getSettings(): 会返回包含浏览器默认添加的在内的所有配置，也就是轨道的所有配置
-      - getCapabilities(): 方法返回一个 MediaTrackCapabilities 对象，此对象表示每个可调节属性的值或者范围，该特性依赖于平台和user agent。eg:视频宽高的min和max
-      - clone(): 克隆一个track的备份，和stream一样，会产出一个新的id
-      - stop(): stop后，readyState的状态就变成了ended
-
+     - getConstraints(): 返回创建该轨道的配置,即当前 track 对应的`constraints`值
+     - applyConstraints(): 给该轨道应用新的配置
+     - getSettings(): 会返回包含浏览器默认添加的在内的所有配置，也就是轨道的所有配置
+     - getCapabilities(): 方法返回一个 MediaTrackCapabilities 对象，此对象表示每个可调节属性的值或者范围，该特性依赖于平台和 user agent。eg:视频宽高的 min 和 max
+     - clone(): 克隆一个 track 的备份，和 stream 一样，会产出一个新的 id
+     - stop(): stop 后，readyState 的状态就变成了 ended
 
 #### 2.[结合 video 和 canvas 可实现的拍照功能](./take-photo.html)
 
@@ -188,6 +189,37 @@ mediaRecorder.onstop = (e: Event) => {
 - P2P 网络加速
 - 游戏
 
+### 相关概念
+
+#### 1. SDP
+
+`SDP`：`Session Description Protocol`，它是一种用于描述多媒体会话的协议，它可以帮助我们描述媒体流的信息，比如媒体流的类型，编码格式，分辨率等等。WebRTC 通过`SDP`来交换端与端之间的`网络`和`媒体`信息。
+
+下图中就是一个`SDP`信息的示例：从中你能大概的看到一些你的内网 IP 信息，外网 IP 信息，以及一些媒体流的信息。
+
+```sh
+v=0 # SDP版本号
+o=- 0 0 IN IP4 120.24.99.xx # 会话标识信息
+s=- # 会话名称
+t=0 0 # 会话的有效时间
+a=group:BUNDLE audio video # 媒体流类型
+a=msid-semantic: WMS * # 媒体流标识符
+m=audio 9 UDP/TLS/RTP/SAVPF 111 103 104 9 0 8 106 105 13 126 # 音频媒体流
+c=IN IP4 120.24.99.xx # 连接信息
+a=rtcp:9 IN IP4 0.0.0.0 # RTCP 的 IP 地址
+a=candidate:0 1 UDP 2122252543 120.24.99.xx 9 typ host # 候选 IP 地址
+# ...等等等
+```
+
+#### 2. NAT
+
+`NAT`：`Network Address Translation`，网络地址转换，它可以将私有 IP 地址转换为公共 IP 地址，从而实现私有网络与公共网络之间的通信。
+因为 IPv4 的地址空间比较有限，所以我们大多数设备都部署在 `NAT` 网络内部。
+
+#### 3. ICE
+
+`ICE`：`Interactive Connectivity Establishment`，交互式连接建立协议，用于在两个主机之间建立连接，它可以在两个主机之间建立连接，即使它们之间的防火墙阻止了直接连接。
+
 ### 相关 API
 
 - RTCPeerConnection 接口代表一个由本地计算机到远端的 WebRTC 连接。该接口提供了创建、保持、监控、关闭连接的方法的实现。
@@ -195,7 +227,7 @@ mediaRecorder.onstop = (e: Event) => {
 - PC.setLocalDescription 设置本地 SDP 描述信息。
 - PC.setRemoteDescription 设置远端 SDP 描述信息，即对方发过来的 SDP 数据。
 - PC.createAnswer 创建应答 Answer 方法，此方法会返回 SDP Answer 信息。
-- RTCIceCandidate WebRTC 网络信息(IP、端口等)(ICE能收集本地公网地址，并拿到对方的公网地址后直连)
+- RTCIceCandidate WebRTC 网络信息(IP、端口等)(ICE 能收集本地公网地址，并拿到对方的公网地址后直连)
 - PC.addIceCandidate PC 连接添加对方的 IceCandidate 信息，即添加对方的网络信息。
 
 ### WebRTC 建立连接步骤
@@ -209,7 +241,13 @@ mediaRecorder.onstop = (e: Event) => {
 7. 完成打洞后，A 和 B 开始为安全的媒体通信协商秘钥；
 8. 至此， A 和 B 可以进行音视频通话。
 
-![流程图](./WebRTC.jpeg)
+![流程图](./images/WebRTC.jpeg)
+
+### 缺陷
+
+- 兼容性问题。在 Web 端存在浏览器之间的兼容性问题，虽然 WebRTC 组织在 GitHub 上提供了 WebRTC 适配器，但除此之外仍要面临浏览器行为不一致的问题
+- 传输质量不稳定。由于 WebRTC 使用的是对点对传输，跨运营商、跨地区、低带宽、高丢包等场景下的传输质量基本听天由命。
+- 移动端适配差。针对不同机型需要做适配，很难有统一的用户体验。
 
 ## 相关文章
 
@@ -217,4 +255,4 @@ mediaRecorder.onstop = (e: Event) => {
 - [WebRTC：会话描述协议 SDP](https://zhuanlan.zhihu.com/p/75492311)
 - [WebRTC 从实战到未来！迎接风口，前端必学的技术](https://juejin.cn/post/7151932832041058340#comment)
 - [信令与视频通话](https://developer.mozilla.org/zh-CN/docs/Web/API/WebRTC_API/Signaling_and_video_calling)
-
+- [音视频通话实战与原理](https://github.com/wangrongding/frontend-park/blob/main/src/page/webRTC/wertc-connect.md)
