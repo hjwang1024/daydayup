@@ -57,25 +57,25 @@
                     this.imgList.push(canvas.toDataURL('image/png'))
 
                     // // 添加滤镜
-                    // const filterList = [
-                    //     'blur(5px)', // 模糊
-                    //     'brightness(0.5)', // 亮度
-                    //     'contrast(200%)', // 对比度
-                    //     'grayscale(100%)', // 灰度
-                    //     'hue-rotate(90deg)', // 色相旋转
-                    //     'invert(100%)', // 反色
-                    //     'opacity(90%)', // 透明度
-                    //     'saturate(200%)', // 饱和度
-                    //     'saturate(20%)', // 饱和度
-                    //     'sepia(100%)', // 褐色
-                    //     'drop-shadow(4px 4px 8px blue)', // 阴影
-                    // ]
+                    const filterList = [
+                        'blur(5px)', // 模糊
+                        'brightness(0.5)', // 亮度
+                        'contrast(200%)', // 对比度
+                        'grayscale(100%)', // 灰度
+                        'hue-rotate(90deg)', // 色相旋转
+                        'invert(100%)', // 反色
+                        'opacity(90%)', // 透明度
+                        'saturate(200%)', // 饱和度
+                        'saturate(20%)', // 饱和度
+                        'sepia(100%)', // 褐色
+                        'drop-shadow(4px 4px 8px blue)', // 阴影
+                    ]
 
-                    // for (let i = 0; i < filterList.length; i++) {
-                    //     ctx.filter = filterList[i]
-                    //     ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height)
-                    //     this.imgList.push(canvas.toDataURL('image/png'))
-                    // }
+                    for (let i = 0; i < filterList.length; i++) {
+                        ctx.filter = filterList[i]
+                        ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height)
+                        this.imgList.push(canvas.toDataURL('image/png'))
+                    }
                     console.log('imgList', this.imgList)
 
                 }
