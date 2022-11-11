@@ -82,6 +82,7 @@
                     let timer = null // 定时器
                     this.mediaRecorder = new MediaRecorder(this.stream, options)
                     this.mediaRecorder.start()
+
                     this.mediaRecorder.ondataavailable = (e) => {
                         console.log(e);
                         chunks.push(e.data)
@@ -97,7 +98,7 @@
                         this.timeCount = 0
                         clearInterval(timer)
                         // 将录制的数据合并成一个 Blob 对象
-                        this.videoBlob = new Blob(chunks, { type: this.mediaRecorder.mimeType })
+                        this.videoBlob = new Blob(chunks, { type: "video/mp4" })  // "video/mp4"
                         chunks.length = 0
                     }
 
@@ -105,18 +106,13 @@
                 // 下载 Blob
                 downloadBlob() {
                     let blob = this.videoBlob
-                    // 将 Blob 对象转换成一个 URL 地址
                     const url = URL.createObjectURL(blob)
                     const a = document.createElement('a')
-                    // 设置 a 标签的 href 属性为刚刚生成的 URL 地址
                     a.href = url
-                    // 设置 a 标签的 download 属性为文件名
                     a.download = `${new Date().getTime()}.${
                         blob.type.split('/')[1].split(';')[0]
                     }`
-                    // 模拟点击 a 标签
                     a.click()
-                    // 释放 URL 地址
                     URL.revokeObjectURL(url)
                 }
 

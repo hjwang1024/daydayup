@@ -157,7 +157,7 @@ mediaRecorder.ondataavailable = (e) => {
 };
 // 停止录制 同时触发dataavailable事件
 mediaRecorder.onstop = (e: Event) => {
-  // 生成blob后可供下载（URL.createObjectURL + a标签）
+  // 生成blob后可供下载（URL.createObjectURL + a标签） 或者 使用 ffmpeg 处理视频
   const blob = new Blob([e.data], { type: "video/mp4" });
 };
 ```
