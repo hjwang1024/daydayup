@@ -34,7 +34,7 @@ xhr.abort();
   source.cancel('canceled by the user.');
   ```
 
-- 项目中 使用 xios 拦截器 和 vuex
+- 项目中 使用 axios 拦截器 和 vuex
 
   ```js
   // vuex
