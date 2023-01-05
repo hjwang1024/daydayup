@@ -39,5 +39,12 @@ http-server [path] [options]
 - 直接使用 `http-server -S` 会报错，因为缺少证书
 - 生成 cert.pem 和 key.pem,再运行`http-server -S`
     ```sh
+    # 私钥和公钥证书一起生成
     openssl req -newkey rsa:2048 -new -nodes -x509 -days 3650 -keyout key.pem -out cert.pem
+
+    #生成私钥
+    openssl genrsa 1024 > key.pem
+
+    #生成证书
+    openssl req -x509 -new -key key.pem > cert.pem
     ```
