@@ -108,6 +108,7 @@ close()
   import Worker from  './worker/web.worker'
   let worker = new Worker();
   ```
+- [vue-中使用vue-worker](https://juejin.cn/post/7198476152624595005)
 
   
 
