@@ -1,3 +1,11 @@
+## 作用域
+- `作用域`指代码当前上下文，控制着变量和函数的可见性和生命周期。最大的作用是隔离变量，不同作用域下同名变量不会冲突
+- `作用域链`指如果在当前作用域中没有查到值，就会向上级作用域查询，直到全局作用域，这样一个查找过程所形成的链条就被称之为作用域链。
+- `全局作用域`：代码在程序的任何地方都能被访问，例如 window 对象。但全局变量会污染全局命名空间，容易引起命名冲突。
+- `模块作用域` 早期 js 语法中没有模块的定义，因为最初的脚本小而简单。后来随着脚本越来越复杂，就出现了模块化方案（AMD、CommonJS、UMD、ES6模块等）。通常一个模块就是一个文件或者一段脚本，而这个模块拥有自己独立的作用域。
+- `函数作用域` 顾名思义由函数创建的作用域。闭包就是在该作用域下产生，后面我们会单独介绍。
+- `块级作用域` 由于 js 变量提升存在变量覆盖、变量污染等设计缺陷，所以 ES6 引入了块级作用域关键字来解决这些问题。典型的案例就是 let 的 for 循环和 var 的 for 循环。
+
 
 ## 闭包
 - 闭包是指有权访问另一个函数作用域中变量的函数
@@ -13,6 +21,15 @@
   - 柯里化实现
 - `注意`：容易导致内存泄漏。闭包会携带包含其它的函数作用域，因此会比其他函数占用更多的内存。过度使用闭包会导致内存占用过多，所以要谨慎使用闭包
 
+
+## 原型和原型链
+- 有对象的地方就有`原型`，每个对象都会在其内部初始化一个属性，就是prototype(原型)，原型中存储共享的属性和方法。当我们访问一个对象的属性时，js引擎会先看当前对象中是否有这个属性，如果没有的就会查找他的prototype对象是否有这个属性，如此递推下去，一直检索到 Object 内建对象。这么一个寻找的过程就形成了`原型链`的概念。
+```js
+const arr = [1, 2, 3];
+arr.__proto__ === Array.prototype; // true
+arr.__proto__.__proto__ === Object.prototype; // true
+Array.__proto__ === Function.prototype; // true
+```
 
 ## 事件循环
 - js单线程的特性，非阻塞：通过 event loop 实现
@@ -79,10 +96,56 @@
 - Proxy ：用于创建一个对象的代理，从而实现基本操作的拦截和自定义
 ```js
 var proxy = new Proxy(target, handler)
+// 取消代理
+Proxy.revocable(target, handler);
 ```
 - target表示所要拦截的目标对象（任何类型的对象，包括原生数组，函数，甚至另一个代理）
 - handler通常以函数作为属性的对象，各属性中的函数分别定义了在执行各种操作时的代理行为
+- handler拦截属性
+  - `get`(target,propKey,receiver)：拦截对象属性的读取
+  - `set`(target,propKey,value,receiver)：拦截对象属性的设置
+  - has(target,propKey)：拦截propKey in proxy的操作，返回一个布尔值
+  - `deleteProperty`(target,propKey)：拦截delete proxy[propKey]的操作，返回一个布尔值
+  - ownKeys(target)：拦截Object.keys(proxy)、for...in等循环，返回一个数组
+  - getOwnPropertyDescriptor(target, propKey)：拦截Object.getOwnPropertyDescriptor(proxy, propKey)，返回属性的描述对象
+  - defineProperty(target, propKey, propDesc)：拦截Object.defineProperty(proxy, propKey, propDesc），返回一个布尔值
+  - preventExtensions(target)：拦截Object.preventExtensions(proxy)，返回一个布尔值
+  - getPrototypeOf(target)：拦截Object.getPrototypeOf(proxy)，返回一个对象
+  - isExtensible(target)：拦截Object.isExtensible(proxy)，返回一个布尔值
+  - setPrototypeOf(target, proto)：拦截Object.setPrototypeOf(proxy, proto)，返回一个布尔值
+  - apply(target, object, args)：拦截 Proxy 实例作为函数调用的操作
+  - construct(target, args)：拦截 Proxy 实例作为构造函数调用的操作
 
+
+## Reflect
+- Reflect对象与Proxy对象一样，也是 ES6 为了操作对象而提供的新 API
+- 将Object对象的一些明显属于语言内部的方法（比如Object.defineProperty），放到Reflect对象上。现阶段，某些方法同时在Object和Reflect对象上部署，未来的新方法将只部署在Reflect对象上。也就是说，从Reflect对象上可以拿到语言内部的方法。
+- 修改某些Object方法的返回结果，让其变得更合理。比如，Object.defineProperty(obj, name, desc)在无法定义属性时，会抛出一个错误，而Reflect.defineProperty(obj, name, desc)则会返回false。
+  ```js
+  // 老写法
+  try {
+    Object.defineProperty(target, property, attributes);
+    // success
+  } catch (e) {
+    // failure
+  }
+
+  // 新写法
+  if (Reflect.defineProperty(target, property, attributes)) {
+    // success
+  } else {
+    // failure
+  }
+  ```
+- 让Object操作都变成函数行为。某些Object操作是命令式，比如name in obj和delete obj[name]，而Reflect.has(obj, name)和Reflect.deleteProperty(obj, name)让它们变成了函数行为。
+  ```js
+    // 老写法
+  'assign' in Object // true
+
+  // 新写法
+  Reflect.has(Object, 'assign') // true
+  ```
+- Reflect对象的方法与Proxy对象的方法一一对应，只要是Proxy对象的方法，就能在Reflect对象上找到对应的方法。
 
 ## 字符串模版渲染
 ```js
