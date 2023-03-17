@@ -192,3 +192,71 @@ String.prototype.render = function (obj) {
 
 ```
 
+## 深浅拷贝
+
+#### 浅拷贝
+1. Object.assign(target, ...sources)
+   - 它不会拷贝对象的继承属性；
+   - 它不会拷贝对象的不可枚举的属性；
+   - 可以拷贝 Symbol 类型的属性。
+2. 扩展运算符
+3. concat拷贝数组
+4. slice拷贝数组,arr.slice(begin, end)
+   - 浅拷贝只能拷贝一层对象。如果存在对象的嵌套，只是拷贝的地址
+
+#### 深拷贝
+1. JSON.stringify
+   - 会忽略 undefined
+   - 会忽略 symbol
+   - 不能序列化函数
+   - 无法拷贝不可枚举的属性
+   - 无法拷贝对象的原型链
+   - 拷贝 RegExp 引用类型会变成空对象
+   - 拷贝 Date 引用类型会变成字符串
+   - 对象中含有 NaN、Infinity 以及 -Infinity，JSON 序列化的结果会变成 null
+   - 不能解决循环引用的对象，即对象成环 (obj[key] = obj)。
+2. 手写递归（没有类型判断）
+3. 手写递归（包含类型判断）
+   ```js
+   const isComplexDataType = obj => (typeof obj === 'object' || typeof obj === 'function') && (obj !== null)
+
+   const deepClone = function (obj, hash = new WeakMap()) {
+     if (obj.constructor === Date) {
+       return new Date(obj)       // 日期对象直接返回一个新的日期对象
+     }
+
+     if (obj.constructor === RegExp){
+       return new RegExp(obj)     //正则对象直接返回一个新的正则对象
+     }
+
+     //如果循环引用了就用 weakMap 来解决
+     if (hash.has(obj)) {
+       return hash.get(obj)
+     }
+     let allDesc = Object.getOwnPropertyDescriptors(obj)  //获取obj 所有属性的描述符
+
+     //遍历传入参数所有键的特性
+     let cloneObj = Object.create(Object.getPrototypeOf(obj), allDesc)
+
+     // 把cloneObj原型复制到obj上
+     hash.set(obj, cloneObj)
+
+     for (let key of Reflect.ownKeys(obj)) { 
+       cloneObj[key] = (isComplexDataType(obj[key]) && typeof obj[key] !== 'function') ? deepClone(obj[key], hash) : obj[key]
+     }
+     return cloneObj
+   }
+
+   ```
+
+## Object.create()、new Object()和{}的区别
+- new Object()和{}字面量，创建的新对象的__proto__都指向Object.prototype，只是字面量创建更高效一些，少了__proto__指向赋值和this。
+- Object.create()方法创建一个新对象，使用现有的对象来提供新创建的对象的__proto__。
+- `Object.create(proto[, propertiesObject])`
+- proto必填参数，是新对象的原型对象，如上面代码里新对象me的__proto__指向person。注意，如果这个参数是null，那新对象就彻彻底底是个空对象，没有继承Object.prototype上的任何属性和方法，如hasOwnProperty()、toString()等。
+- propertiesObject是可选参数，指定要添加到新对象上的可枚举的属性（即其自定义的属性和方法，可用hasOwnProperty()获取的，而不是原型对象上的）的描述符及相应的属性名称。使用getOwnPropertyDescriptors可以获取对象属性的描述符
+
+## 点击刷新按钮或者按 F5、按 Ctrl+F5 （强制刷新）、地址栏回车有什么区别？
+- 点击刷新按钮或者按 F5： 浏览器直接对本地的缓存文件过期，但是会带上If-Modifed-Since，If-None-Match，这就意味着服务器会对文件检查新鲜度，返回结果可能是 304，也有可能是 200。
+- 用户按 Ctrl+F5（强制刷新）： 浏览器不仅会对本地文件过期，而且不会带上 If-Modifed-Since，If-None-Match，相当于之前从来没有请求过，返回结果是 200。
+- 地址栏回车： 浏览器发起请求，按照正常流程，本地检查是否过期，然后服务器检查新鲜度，最后返回内容。

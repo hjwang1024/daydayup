@@ -16,5 +16,11 @@
     }
   ```
 
+## 平滑滚动到指定元素
+```js
+document.getElementById("payment-title").scrollIntoView(alignToTop,{ // alignToTop 为true 与元素顶部对齐，false为底部对齐
+  behavior: "smooth",
+});
+```
 
 

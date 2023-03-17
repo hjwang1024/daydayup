@@ -28,3 +28,6 @@
 
 ## 查看日志
 `tail -f *.log`
+
+## 修改文件权限
+`chmod 0600 key.pem`
