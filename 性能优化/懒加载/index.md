@@ -15,7 +15,7 @@ window.onload = window.onscroll = function () { //onscroll()在滚动条滚动�
     loadImg();
 }
 function loadImg(){
-    if(documentElement.scrollTop+document.documentElement.clientHeight < element.offsetTop){
+    if(documentElement.scrollTop+document.documentElement.clientHeight > element.offsetTop){
         element.src = element.dataset.src
     } 
 }
