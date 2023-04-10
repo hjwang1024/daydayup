@@ -139,15 +139,15 @@ export const disconnectIntersectionListener = function () {
 # 浏览器视口API
 ### 设备（显示器）
 
-- `window.screen.height`  
+- `window.screen.height`  获取获屏幕取理想视窗高度，这个数值是固定的，设备的分辨率/设备像素比
 - `window.screen.availHeight`  屏幕的可用高度，一般是显示屏高度减去显示屏任务栏的高度
 
 
 ## 浏览器窗口
 ![浏览器](./images/浏览器.png)
 - `window.outerHeight` 浏览器的高度，高度改变，会改变值的大小
-
 - `window.innerHeight`  浏览器的可用高度 = 浏览器高度 - 顶部工具栏 ,若有调试面板还会再减去调度面板的高度，最后得出的才是可用高度
+
 
 ## body
 - `document.body.clientHeight`  body的高度
