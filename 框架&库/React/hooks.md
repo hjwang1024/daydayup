@@ -77,3 +77,72 @@ const Child1 = React.memo(function (props) {
   );
 });
 ```
+
+## 自定义hook
+#### useWatch监听
+```js
+import { useEffect, useRef } from 'react';
+export function useWatch(value, callback, config = { immediate: false }) {
+  const oldValue = useRef();
+  const isInit = useRef(false);
+  const isWatch = useRef(true);
+  useEffect(() => {
+    if (isWatch.current) {
+      if (!isInit.current) {
+        isInit.current = true;
+        if (config.immediate) {
+          callback(value, oldValue.current);
+        }
+      } else {
+        callback(value, oldValue.current);
+      }
+      oldValue.current = value;
+    }
+  }, [value])
+
+  const unwatch =  () => {
+    isWatch.current = false;
+  };
+  return unwatch;
+}
+
+// 用法
+useWatch(title, (value, oldValue) => {
+    console.log(value);
+    console.log(oldValue)
+  })
+```
+
+## useImperativeHandle父组件调用子组件方法（配合forwardRef使用）
+```js
+// 子组件
+import { useState, forwardRef, useImperativeHandle } from 'react';
+const HelloWorld = (props, ref) => {
+  const [title, setTitle] = useState('hello World');
+  useImperativeHandle(ref, () => ({
+    handleChangeTitle: () => {
+      setTitle('hello React')
+    },
+  }));
+  return (
+    <div>{title}</div>
+  );
+}
+export default forwardRef(HelloWorld)
+
+// 父组件
+import { useRef } from 'react'
+import HelloWorld from './HelloWorld.js'
+export default function Index() {
+  const myCom = useRef();
+  const changeTitle = () => {
+    myCom.current.handleChangeTitle();
+  }
+  return (
+    <div>
+      <HelloWorld ref={myCom} />
+      <button onClick={changeTitle}>改变标题</button>
+    </div>
+  )
+}
+```

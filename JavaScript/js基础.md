@@ -317,3 +317,11 @@ String.prototype.render = function (obj) {
 - 地址栏回车： 浏览器发起请求，按照正常流程，本地检查是否过期，然后服务器检查新鲜度，最后返回内容。
 
 
+## js生成随机数
+```js
+function randomNumber(min,max){
+  return Math.floor(Math.random()*(max-min+1)+min);
+}
+
+```
+
