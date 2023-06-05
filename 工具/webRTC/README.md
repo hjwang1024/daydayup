@@ -141,6 +141,11 @@ function playStream(stream: MediaStream) {
   ```
 - 常用的视频编码 `['vp9', 'vp9.0', 'vp8', 'vp8.0', 'avc1', 'av1', 'h265', 'h264']`
 - 常用的视频格式 `['webm','mp4','ogg','mov','avi','wmv','flv','mkv','ts','x-matroska']`
+- 浏览器video标签支持的格式，容器封装格式有：MP4、WebM和Ogg
+  - MP4 ： 使用h.264编码的视频和aac编码的音频
+  - WebM ：使用 VP8 视频编解码器和 Vorbis 音频编解码器
+  - Ogg：使用 Theora 视频编解码器和 Vorbis音频编解码器
+
 
 ```js
 const options = {
@@ -161,6 +166,7 @@ mediaRecorder.onstop = (e: Event) => {
   const blob = new Blob([e.data], { type: "video/mp4" });
 };
 ```
+
 
 ## WebRTC
 
@@ -256,3 +262,24 @@ a=candidate:0 1 UDP 2122252543 120.24.99.xx 9 typ host # 候选 IP 地址
 - [WebRTC 从实战到未来！迎接风口，前端必学的技术](https://juejin.cn/post/7151932832041058340#comment)
 - [信令与视频通话](https://developer.mozilla.org/zh-CN/docs/Web/API/WebRTC_API/Signaling_and_video_calling)
 - [音视频通话实战与原理](https://github.com/wangrongding/frontend-park/blob/main/src/page/webRTC/wertc-connect.md)
+
+
+
+
+##  直播通信技术
+#### 概念
+- 采集端：顾名思义是视频的源头，视频的采集一般都是从真实的摄像头中得到的。例如移动端设别、PC端设备的摄像头以及一些摄像头设备；
+- 流媒体服务器：流媒体服务器是整个直播技术框架的非常重要的一环，它需要接收从采集端推上来的视频流，然后将该视频流再推送到播放端；
+- 播放端：播放端就是各种app，网页中的播放器，拉取流媒体服务器上的视频流，然后进行转码，最终播放出来；
+- 推流:把采集阶段收集的数据封装好传输到服务器的过程；
+- 拉流:服务器已有直播内容,用指定地址进行拉取的过程。
+
+- RTMP (可用于推流端和拉流端)Real Time Messaging Protocol，实时消息传输协议。RTMP协议中，视频必须是H264编码，音频必须是AAC或MP3编码，且多以flv格式封包。因为RTMP协议传输的基本是FLV格式的流文件，必须使用flash播放器才能播放。
+
+- RTSP (用于推流端)Real-Time Stream Protocol，RTSP实时效果非常好，适合视频聊天、视频监控等方向。
+
+- HLS (用于拉流端)Http Live Streaming，由Apple公司定义的基于HTTP的流媒体实时传输协议。传输内容包括两部分：1.M3U8描述文件；2.TS媒体文件。TS媒体文件中的视频必须是H264编码，音频必须是AAC或MP3编码。数据通过HTTP协议传输。目前video.js库支持该格式文件的播放。
+
+- HTTP-FLV (用于拉流端)本协议就是http+flv，将音视频数据封装成FLV格式，然后通过http协议传输到客户端，这个协议大大方便了浏览器客户端播放直播视频流。目前flv.js库支持该格式的文件播放。
+
+![直播通信](./images/直播通信.png)

@@ -67,4 +67,151 @@
 - SEO302好于301
 
 
+## Server-Sent Events 服务器推送事件
+- 简称 SSE，是一种服务端实时主动向浏览器推送消息的技术，SSE 是 HTML5 中一个与通信相关的 API，主要由两部分组成：服务端与浏览器端的通信协议（HTTP 协议）及浏览器端可供 JavaScript 使用的 EventSource 对象。
+#### 对比
+<table>
+    <thead>
+        <tr>
+            <th></th>
+            <th>Server-Sent Events API</th>
+            <th>WebSockets API</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>协议</td>
+            <td>HTTP</td>
+            <td>TCP</td>
+        </tr>
+        <tr>
+            <td>通讯方式</td>
+            <td>单工，只能服务端单向发送消息</td>
+            <td>全双工，可以同时发送和接收消息</td>
+        </tr>
+        <tr>
+            <td>发送内容类型</td>
+            <td>文本或使用 Base64 编码和 gzip 压缩的二进制消息	</td>
+            <td>类型广泛</td>
+        </tr>
+        <tr>
+            <td>自定义事件</td>
+            <td>支持自定义事件类型</td>
+            <td>不支持自定义事件类型</td>
+        </tr>
+        <tr>
+            <td>连接数</td>
+            <td>连接数 HTTP/1.1 6 个，HTTP/2 可协商（默认 100）	</td>
+            <td>连接数无限制</td>
+        </tr>
+    </tbody>
+</table>
 
+#### 实现
+- 服务端响应header
+  - Content-Type: text/event-stream  
+  - Cache-Control: no-cache(确保浏览器可以实时显示服务端发送的数据)
+  - Connection: keep-alive
+- 消息格式
+  - EventStream（事件流）为 UTF-8 格式编码的文本或使用 Base64 编码和 gzip 压缩的二进制消息。
+每条消息由一行或多行字段（event、id、retry、data）组成，每个字段组成形式为：字段名:字段值。字段以行为单位，每行一个（即以 \n 结尾）。以冒号开头的行为注释行，会被浏览器忽略。
+每次推送，可由多个消息组成，每个消息之间以空行分隔（即最后一个字段以\n\n结尾）。
+- js使用`EventSource`对象
+  - const eventSource = new EventSource('http_api_url', { withCredentials: true }) 
+  - readyState
+    - 0	浏览器与服务端尚未建立连接或连接已被关闭
+    - 1	浏览器与服务端已成功连接，浏览器正在处理接收到的事件及数据
+    - 2	浏览器与服务端建立连接失败，客户端不再继续建立与服务端之间的连接
+  - eventSource.close() 关闭连接
+  - EventSource 对象本身继承自 EventTarget 接口
+    - open 事件：当成功连接到服务端时触发。
+    - message 事件：当接收到服务器发送的消息时触发。该事件对象的 data 属性包含了服务器发送的消息内容。
+    - error 事件：当发生错误时触发。该事件对象的 event 属性包含了错误信息。
+- 示例
+```js
+// server.js
+const http = require('http');
+const fs = require('fs');
+http.createServer((req, res) => {
+    if (req.url === '/') {
+        // 如果请求根路径，返回 index.html 文件 
+        fs.readFile('index.html', (err, data) => {
+            if (err) {
+                res.writeHead(500);
+                res.end('Error loading index.html');
+            } else {
+                res.writeHead(200, {'Content-Type': 'text/html'}); 
+                res.end(data);
+            }
+         });
+     } else if (req.url === '/events') {
+         // 如果请求 /events 路径，建立 SSE 连接 
+         res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'Connection': 'keep-alive' }); 
+         // 每隔 1 秒发送一条消息 
+         let id = 0; 
+         const intervalId = setInterval(() => { 
+             res.write(`event: customEvent\n`)
+             res.write(`id: ${id}\n`)
+             res.write(`retry: 30000\n`)
+             const data = { id, time: new Date().toISOString()}
+             res.write(`data: ${JSON.stringify(data)}\n\n`); 
+             id++
+          }, 1000); 
+          // 当客户端关闭连接时停止发送消息
+          req.on('close', () => { 
+              clearInterval(intervalId); 
+              id = 0
+              res.end();
+          });
+    } else { 
+        // 如果请求的路径无效，返回 404 状态码 
+        res.writeHead(404); 
+        res.end();
+    }
+    
+}).listen(3000); 
+
+console.log('Server listening on port 3000'); 
+
+// html
+<body>
+    <h1>SSE Demo</h1>
+    <button onclick="connectSSE()">建立 SSE 连接</button>
+    <button onclick="closeSSE()">断开 SSE 连接</button> <br /> <br /> 
+    <div id="message"></div>
+    <script> 
+        const messageElement = document.getElementById('message') 
+        let eventSource // 建立 SSE 连接 
+        const connectSSE = () => {
+            eventSource = new EventSource('/events') // 监听消息事件 
+            eventSource.addEventListener('customEvent', (event) => { 
+                const data = JSON.parse(event.data) 
+                messageElement.innerHTML += `${data.id} --- ${data.time}` + '<br />'
+             }) 
+            eventSource.onopen = () => {
+                messageElement.innerHTML += `SSE 连接成功，状态${eventSource.readyState}<br />` 
+            }
+            eventSource.onerror = () => {
+                messageElement.innerHTML += `SSE 连接错误，状态${eventSource.readyState}<br />`
+             } 
+         } 
+         // 断开 SSE 连接 
+         const closeSSE = () => {
+             eventSource.close() 
+             messageElement.innerHTML += `SSE 连接关闭，状态${eventSource.readyState}<br />`
+         }
+      </script>
+</body>
+
+```
+## 简单请求
+- 只要同时满足以下条件就属于简单请求
+1. 请求方法是以下三种方法之一：GET、POST、HEAD
+2. Http的头信息不超出以下几种字段：Accept、Accept-Language、Content-Language、Last-Event-ID、Content-Type。
+3. Content-Type只限于三个值：application/x-www-form-urlencoded、multipart/form-data、text/plain
+
+## 非简单请求
+- 会预检请求 (preflight request)，即先预发送OPTIONS的请求
+第一次是浏览器使用OPTIONS方法发起一个预检请求，第二次才是真正的异步请求
+第一次的预检请求获知服务器是否允许该跨域请求：如果允许，才发起第二次真实的请求；如果不允许，则拦截第二次请求。
+Access-Control-Max-Age用来指定本次预检请求的有效期，单位为秒，在此期间不用发出另一条预检请求。
