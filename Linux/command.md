@@ -25,6 +25,10 @@
 - kill PID
 - kill -KILL PID 强制杀死进程 
 
+### 查看端口使用情况
+- lsof -i 
+lsof -i:8080 指定端口
+
 
 ## 查看日志
 `tail -f *.log`
