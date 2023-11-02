@@ -1,5 +1,4 @@
-
-## Nginx配置
+## Nginx 配置
 
 ```shell
     server {
@@ -45,6 +44,7 @@
             # 默认文档名称，当客户端请求`www.example.com`时，将默认返回`/data/w3/index.html`文件或`/data/w3/index.htm`文件
             # 如果没有文件匹配则根据其他规则处理
 
+            # 可以解决单页面应用刷新页面404的问题
             try_files $uri $uri/ /index.html;
             # 在文件系统中查询文件
             # 如果$url对应的文件存在则直接返回该文件；如果不存在则返回$url/下的index.html文件；否则返回根目录下的/index.html文件

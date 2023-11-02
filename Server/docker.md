@@ -44,4 +44,4 @@
 
 - `docker run -it --rm --name busybox2 --network my-net busybox sh` 运行一个容器并加入到 my-net 网络
 
-- `docker exec -i -t [image-name] base` 进入容器
+- `docker exec -i -t [image-name] bash` 进入容器
