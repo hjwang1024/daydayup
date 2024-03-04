@@ -39,7 +39,7 @@
 
 ## 修改文件权限
 
-`chmod 0600 key.pem`
+`chmod 600 key.pem`
 
 ## 文件命令
 
@@ -51,3 +51,14 @@
 - nohup [command] &
 - `jobs` 查看后台任务
 - `kill`
+
+## 服务器免登录 pem
+
+1. 登录服务器 `ssh-keygen -t rsa -b 2048 -v`
+2. 将私钥重命名至 id_rsa.pem：`mv ~/.ssh/id_rsa ~/.ssh/id_rsa.pem`
+3. 修改~/.ssh/目录权限：`chmod 700 ~/.ssh/`
+4. 将 id_rsa.pub 文件内容重定向至 authorized_keys 文件：`cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys`
+5. 重启 ssh 服务：service sshd restart
+6. 在本地修改`~/.ssh/config`文件，新增 host 配置
+7. 新增 pem 文件，复制服务器`~/.ssh/id_rsa.pem`
+8. 修改文件权限`chmod 700 ~/.ssh/`

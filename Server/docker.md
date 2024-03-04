@@ -45,3 +45,43 @@
 - `docker run -it --rm --name busybox2 --network my-net busybox sh` 运行一个容器并加入到 my-net 网络
 
 - `docker exec -i -t [image-name] bash` 进入容器
+
+## docker-compose 模板
+
+```shell
+version: "3"
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+  db:
+    image: postgres
+
+```
+
+## Dockerfile 模板
+
+```shell
+FROM node:14
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+EXPOSE 3000
+
+CMD [ "npm", "start" ]
+```
+
+- `docker-compose up -d`构建和运行容器
+- `docker-compose build --no-cache web` 清理缓存并重新构建 web 服务的镜像
+- `docker-compose down --rmi all` 停止并移除所有容器，并删除相关的镜像

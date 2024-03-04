@@ -456,3 +456,57 @@ async function test() {
 
 test();
 ```
+
+## js 生成 UUID
+
+- 一般使用的 UUID 是个 36 位的字符串,其格式如下:
+- `xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx` 其中第 15 位数是 4,第 20 位是 8 到 b 这 4 个中的一个
+
+```js
+function getUuid() {
+  // 先判断是否引入 crypto
+  if (typeof crypto === "object") {
+    if (typeof crypto.randomUUID === "function") {
+      return crypto.randomUUID();
+    }
+    if (
+      typeof crypto.getRandomValues === "function" &&
+      typeof Uint8Array === "function"
+    ) {
+      const callback = (c) => {
+        const num = Number(c);
+        return (
+          num ^
+          (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (num / 4)))
+        ).toString(16);
+      };
+      return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, callback);
+    }
+  }
+  // 使用日期+随机数
+  let timestamp = new Date().getTime();
+  let perforNow =
+    (typeof performance !== "undefined" &&
+      performance.now &&
+      performance.now() * 1000) ||
+    0;
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    let random = Math.random() * 16;
+    if (timestamp > 0) {
+      random = (timestamp + random) % 16 | 0;
+      timestamp = Math.floor(timestamp / 16);
+    } else {
+      random = (perforNow + random) % 16 | 0;
+      perforNow = Math.floor(perforNow / 16);
+    }
+    return (c === "x" ? random : (random & 0x3) | 0x8).toString(16);
+  });
+}
+
+// URL.createObjectURL
+function UUID() {
+  let str = URL.createObjectURL(new Blob());
+  URL.revokeObjectURL(str);
+  return str.split("/")[1];
+}
+```
