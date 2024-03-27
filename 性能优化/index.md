@@ -111,7 +111,6 @@ setTimeout/setInterval、requestAnimationFrame 三者的区别：
   requestAnimationFrame 刷新频率是固定且准确的，但 setTimeout/setInterval 是宏任务，根据事件轮询机制，其他任务会阻塞或延迟 js 任务的执行，会出现定时器不准的情况
 - 性能层面
   当页面被隐藏或最小化时，setTimeout/setInterval 定时器仍会在后台执行动画任务，而使用 requestAnimationFrame 当页面处于未激活的状态下，屏幕刷新任务会被系统暂停
-  著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
 
 ## 图片优化
 
